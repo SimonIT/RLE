@@ -3,25 +3,19 @@ def compress_rl2(source_file, destination_file):  # -> Exception bei Zeichen > 0
         with open(destination_file, 'wb') as dest_file:
             counter = 1
             byte = src_file.read(1)
-            lastbyte = b""
-            while byte:
-                """if byte < b'\x80':
-                    print("kleiner")
-                else:
-                    print("größer")"""
+            lastbyte = b"\x80"
+            while lastbyte:
                 if lastbyte == byte:
                     counter += 1
                 else:
                     if lastbyte != b"":
-                        if counter != 1:
-                            dest_file.write((counter + 128).to_bytes(1, 'big'))
-                        dest_file.write(lastbyte)
+                        if int.from_bytes(lastbyte, 'big') < 128:
+                            if counter != 1:
+                                dest_file.write((counter + 128).to_bytes(1, 'big'))
+                            dest_file.write(lastbyte)
                         counter = 1
                 lastbyte = byte
                 byte = src_file.read(1)
-            if counter != 1:
-                dest_file.write((counter + 128).to_bytes(1, 'big'))
-            dest_file.write(lastbyte)
 
 
 def expand_rl2(source_file, destination_file):
