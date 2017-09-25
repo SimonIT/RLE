@@ -1,3 +1,6 @@
+import argparse
+
+
 def compress_rl2(source_file, destination_file):  # -> Exception bei Zeichen > 0x7F in source_file
     with open(source_file, 'rb') as src_file:
         with open(destination_file, 'wb') as dest_file:
