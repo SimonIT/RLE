@@ -92,12 +92,8 @@ def expand_rl3(source_file, destination_file):
                             dest_file.write(value)
                 else:
                     dest_file.write(lastbyte)
-                    dest_file.write(byte)
                 byte = src_file.read(1)
 
 
 if __name__ == "__main__":
-    compress_rl2("test.txt", "test.rl2")
-    compress_rl3("test2.hex", "test2.rl3")
-    expand_rl2("test.rl2", "orig.txt")
-    expand_rl3("test2.rl3", "orig2.hex")
+    exit()
