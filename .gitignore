@@ -1,3 +1,9 @@
+.idea/
+*.txt
+*.rl2
+*.rl3
+*.hex
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
