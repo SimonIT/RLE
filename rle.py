@@ -46,11 +46,12 @@ def compress_rl3(source_file, destination_file):
             lastbyte = src_file.read(1)
             byte = src_file.read(1)
             while lastbyte:
-                if lastbyte == byte:
+                if lastbyte == byte and counter < 255:
                     counter += 1
                 else:
                     if counter > 2:
                         dest_file.write(counter_char)
+                        print(counter)
                         dest_file.write(counter.to_bytes(1, 'big'))
                         dest_file.write(lastbyte)
                     else:
@@ -91,8 +92,8 @@ def expand_rl3(source_file, destination_file):
 if __name__ == "__main__":
     compress_rl2("test_files/test.txt", "compress.rl2")
     expand_rl2("compress.rl2", "test.orig.txt")
-    compress_rl3("test_files/test.txt", "compress.rl3")
-    expand_rl3("compress.rl3", "test.txt")
+    compress_rl3("test_files/bild.bmp", "compress.rl3")
+    expand_rl3("compress.rl3", "test2.bmp")
     compress_rl3("test_files/kirby.bmp", "compress2.rl3")
     expand_rl3("compress2.rl3", "test.bmp")
     exit()
