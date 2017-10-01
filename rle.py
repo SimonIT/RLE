@@ -89,10 +89,27 @@ def expand_rl3(source_file, destination_file):
 
 
 if __name__ == "__main__":
-    compress_rl2("test_files/test.txt", "compress.rl2")
-    expand_rl2("compress.rl2", "test.orig.txt")
-    compress_rl3("test_files/bild.bmp", "compress.rl3")
-    expand_rl3("compress.rl3", "test2.bmp")
-    compress_rl3("test_files/kirby.bmp", "compress2.rl3")
-    expand_rl3("compress2.rl3", "test.bmp")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--compress", action="store_true", help="→ komprimieren")
+    parser.add_argument("-d", "--uncompress", action="store_true", help="→ expandieren")
+    parser.add_argument("-i", "--inputfile", help="")
+    parser.add_argument("-o", "--outputfile", help="")
+    parser.add_argument("-t2", "--type2", action="store_true", help="Typ2 des Algorithmus")
+    parser.add_argument("-t3", "--type3", action="store_true", help="Typ3 des Algorithmus")
+    parser.add_argument("-e", "--extension", help="")
+    parser.add_argument("-q", "--quiet", action="store_true", help="")
+    args = parser.parse_args()
+
+    if args.compress:
+        if args.type2:
+            compress_rl2(args.inputfile, args.outputfile)
+        else:
+            compress_rl3(args.inputfile, args.outputfile)
+    elif args.uncompress:
+        if args.type2:
+            expand_rl2(args.inputfile, args.outputfile)
+        else:
+            expand_rl3(args.inputfile, args.outputfile)
+    else:
+        print("Komprimieren oder Dekomprimieren auswählen!")
     exit()
