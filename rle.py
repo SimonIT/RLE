@@ -16,7 +16,7 @@ def compress_rl2(source_file, destination_file):  # -> Exception bei Zeichen > 0
                             dest_file.write((counter + 128).to_bytes(1, 'big'))
                         dest_file.write(lastbyte)
                     else:
-                        print("Wrong Character: " + str(lastbyte))
+                        print("Wrong Character: " + str(lastbyte.hex()))
                     counter = 1
                 lastbyte = byte
                 byte = src_file.read(1)
