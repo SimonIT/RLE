@@ -5,39 +5,38 @@ def compress_rl2(source_file, destination_file):  # -> Exception bei Zeichen > 0
     with open(source_file, 'rb') as src_file:
         with open(destination_file, 'wb') as dest_file:
             counter = 1
-            lastbyte = src_file.read(1)
+            last_byte = src_file.read(1)
             byte = src_file.read(1)
-            while lastbyte:
-                if lastbyte == byte and counter < 127:
+            while last_byte:
+                if last_byte == byte and counter < 127:
                     counter += 1
                 else:
-                    if int.from_bytes(lastbyte, 'big') < 128:
+                    if int.from_bytes(last_byte, 'big') < 128:
                         if counter != 1:
                             dest_file.write((counter + 128).to_bytes(1, 'big'))
-                        dest_file.write(lastbyte)
+                        dest_file.write(last_byte)
                     else:
-                        print("Wrong Character: " + str(lastbyte.hex()))
+                        print("Wrong Character: " + str(last_byte.hex()))
                     counter = 1
-                lastbyte = byte
+                last_byte = byte
                 byte = src_file.read(1)
 
 
 def expand_rl2(source_file, destination_file):
     with open(source_file, 'rb') as src_file:
         with open(destination_file, 'wb') as dest_file:
-            lastbyte = src_file.read(1)
+            last_byte = src_file.read(1)
             byte = src_file.read(1)
-            while lastbyte:
-                if int.from_bytes(lastbyte, 'big') > 128:
-                    counter = int.from_bytes(lastbyte, 'big') - 128
+            while last_byte:
+                if int.from_bytes(last_byte, 'big') > 128:
+                    counter = int.from_bytes(last_byte, 'big') - 128
                     for i in range(counter):
                         dest_file.write(byte)
-                    lastbyte = src_file.read(1)
-                    byte = src_file.read(1)
+                    last_byte = src_file.read(1)
                 else:
-                    dest_file.write(lastbyte)
-                    lastbyte = byte
-                    byte = src_file.read(1)
+                    dest_file.write(last_byte)
+                    last_byte = byte
+                byte = src_file.read(1)
 
 
 def compress_rl3(source_file, destination_file):
@@ -45,23 +44,23 @@ def compress_rl3(source_file, destination_file):
     with open(source_file, 'rb') as src_file:
         with open(destination_file, 'wb') as dest_file:
             counter = 1
-            lastbyte = src_file.read(1)
+            last_byte = src_file.read(1)
             byte = src_file.read(1)
-            while lastbyte:
-                if lastbyte == byte and counter < 255:
+            while last_byte:
+                if last_byte == byte and counter < 255:
                     counter += 1
                 else:
                     if counter > 2:
                         dest_file.write(counter_char)
                         dest_file.write(counter.to_bytes(1, 'big'))
-                        dest_file.write(lastbyte)
+                        dest_file.write(last_byte)
                     else:
                         for i in range(counter):
-                            dest_file.write(lastbyte)
-                            if lastbyte == counter_char:
+                            dest_file.write(last_byte)
+                            if last_byte == counter_char:
                                 dest_file.write(b'\x00')
                     counter = 1
-                lastbyte = byte
+                last_byte = byte
                 byte = src_file.read(1)
 
 
@@ -69,23 +68,22 @@ def expand_rl3(source_file, destination_file):
     counter_char = b'\x90'
     with open(source_file, 'rb') as src_file:
         with open(destination_file, 'wb') as dest_file:
-            lastbyte = src_file.read(1)
+            last_byte = src_file.read(1)
             byte = src_file.read(1)
-            while lastbyte:
-                if lastbyte == counter_char:
+            while last_byte:
+                if last_byte == counter_char:
                     if byte == b'\x00':
-                        dest_file.write(lastbyte)
+                        dest_file.write(last_byte)
                     else:
                         counter = int.from_bytes(byte, 'big')
                         value = src_file.read(1)
                         for i in range(counter):
                             dest_file.write(value)
-                    lastbyte = src_file.read(1)
-                    byte = src_file.read(1)
+                    last_byte = src_file.read(1)
                 else:
-                    dest_file.write(lastbyte)
-                    lastbyte = byte
-                    byte = src_file.read(1)
+                    dest_file.write(last_byte)
+                    last_byte = byte
+                byte = src_file.read(1)
 
 
 if __name__ == "__main__":
@@ -100,16 +98,21 @@ if __name__ == "__main__":
     parser.add_argument("-q", "--quiet", action="store_true", help="")
     args = parser.parse_args()
 
+    if args.extension is None:
+        extension = ""
+    else:
+        extension = args.extension
+
     if args.compress:
         if args.type2:
-            compress_rl2(args.inputfile, args.outputfile)
+            compress_rl2(args.inputfile, args.outputfile + extension)
         else:
-            compress_rl3(args.inputfile, args.outputfile)
+            compress_rl3(args.inputfile, args.outputfile + extension)
     elif args.uncompress:
         if args.type2:
-            expand_rl2(args.inputfile, args.outputfile)
+            expand_rl2(args.inputfile, args.outputfile + extension)
         else:
-            expand_rl3(args.inputfile, args.outputfile)
+            expand_rl3(args.inputfile, args.outputfile + extension)
     else:
         print("Komprimieren oder Dekomprimieren auswählen!")
     exit()
