@@ -52,71 +52,69 @@ def expand_rl2(source_file, destination_file):
 
 
 def compress_rl3(source_file, destination_file):
-    counter_char = b'\x90'
-    with open(source_file, 'rb') as src_file:
-        with open(destination_file, 'wb') as dest_file:
-            counter = 1
-            last_byte = None
-            chunk = src_file.read(4096)
-            while chunk:
-                for byte in chunk:
-                    if last_byte is not None and last_byte == byte and counter < 255:
-                        counter += 1
-                    else:
-                        if last_byte is not None:
-                            if counter > 2:
-                                dest_file.write(counter_char)
-                                dest_file.write(counter.to_bytes(1, 'big'))
-                                dest_file.write(last_byte.to_bytes(1, 'big'))
-                            else:
-                                for i in range(counter):
-                                    dest_file.write(last_byte.to_bytes(1, 'big'))
-                                    if last_byte == counter_char:
-                                        dest_file.write(b'\x00')
-                            counter = 1
-                    last_byte = byte
-                if counter > 2:
-                    dest_file.write(counter_char)
-                    dest_file.write(counter.to_bytes(1, 'big'))
-                    dest_file.write(last_byte.to_bytes(1, 'big'))
+    counter_char = 144
+    with open(source_file, 'rb') as src_file, open(destination_file, 'wb') as dest_file:
+        counter = 1
+        last_byte = None
+        chunk = src_file.read(4096)
+        while chunk:
+            for byte in chunk:
+                if last_byte is not None and last_byte == byte and counter < 257:
+                    counter += 1
                 else:
-                    for i in range(counter):
-                        dest_file.write(last_byte.to_bytes(1, 'big'))
-                        if last_byte == counter_char:
-                            dest_file.write(b'\x00')
-                counter = 1
-                chunk = src_file.read(4096)
+                    if last_byte is not None:
+                        if counter > 2:
+                            dest_file.write(counter_char.to_bytes(1, 'big'))
+                            dest_file.write((counter - 2).to_bytes(1, 'big'))
+                            dest_file.write(last_byte.to_bytes(1, 'big'))
+                        else:
+                            for i in range(counter):
+                                dest_file.write(last_byte.to_bytes(1, 'big'))
+                                if last_byte == counter_char:
+                                    dest_file.write(b'\x00')
+                        counter = 1
+                last_byte = byte
+            chunk = src_file.read(4096)
+        if last_byte is not None:
+            if counter > 2:
+                dest_file.write(counter_char.to_bytes(1, 'big'))
+                dest_file.write((counter - 2).to_bytes(1, 'big'))
+                dest_file.write(last_byte.to_bytes(1, 'big'))
+            else:
+                for i in range(counter):
+                    dest_file.write(last_byte.to_bytes(1, 'big'))
+                    if last_byte == counter_char:
+                        dest_file.write(b'\x00')
 
 
 def expand_rl3(source_file, destination_file):
     counter_char = 144
-    with open(source_file, 'rb') as src_file:
-        with open(destination_file, 'wb') as dest_file:
-            chunk = src_file.read(4096)
-            counter = False
-            value = False
-            count = 0
-            while chunk:
-                for byte in chunk:
-                    if byte == counter_char and not counter and not value:
-                        counter = True
-                    elif counter:
-                        if byte == 0:
-                            dest_file.write(counter_char.to_bytes(1, 'big'))
-                            counter = False
-                        else:
-                            count = byte
-                            counter = False
-                            value = True
-                    elif value:
-                        for i in range(count):
-                            dest_file.write(byte.to_bytes(1, 'big'))
-                        value = False
+    with open(source_file, 'rb') as src_file, open(destination_file, 'wb') as dest_file:
+        chunk = src_file.read(4096)
+        counter = False
+        value = False
+        count = 0
+        while chunk:
+            for byte in chunk:
+                if byte == counter_char and not counter and not value:
+                    counter = True
+                elif counter:
+                    if byte == 0:
+                        dest_file.write(counter_char.to_bytes(1, 'big'))
+                        counter = False
                     else:
+                        count = byte
+                        counter = False
+                        value = True
+                elif value:
+                    for i in range(count + 2):
                         dest_file.write(byte.to_bytes(1, 'big'))
-                chunk = src_file.read(4096)
-            if counter:
-                dest_file.write(counter_char.to_bytes(1, 'big'))
+                    value = False
+                else:
+                    dest_file.write(byte.to_bytes(1, 'big'))
+            chunk = src_file.read(4096)
+        if counter:
+            dest_file.write(counter_char.to_bytes(1, 'big'))
 
 
 if __name__ == "__main__":
@@ -130,20 +128,21 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.extension is None:
-        extension = ""
+        extension = "rld"
     else:
         extension = args.extension
 
     outputfile = os.path.splitext(args.file)[0]
+    if os.path.isfile(outputfile + "." + extension):
+        if " (" in outputfile:
+            outputfile = outputfile.split(" (")[0]
+        number = 1
+        while os.path.isfile(outputfile + " (" + str(number) + ")." + extension):
+            number += 1
+        outputfile += " (" + str(number) + ")"
 
     if args.compress:
-        if args.type2:
-            compress_rl2(args.file, outputfile + extension)
-        else:
-            compress_rl3(args.file, outputfile + extension)
+        compress_rl3(args.file, outputfile + "." + extension)
     elif args.uncompress:
-        if args.type2:
-            expand_rl2(args.file, outputfile + extension)
-        else:
-            expand_rl3(args.file, outputfile + extension)
-    exit()
+        expand_rl3(args.file, outputfile + "." + extension)
+exit()
