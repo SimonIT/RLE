@@ -3,52 +3,50 @@ import os.path
 
 
 def compress_rl2(source_file, destination_file):  # -> Exception bei Zeichen > 0x7F in source_file
-    with open(source_file, 'rb') as src_file:
-        with open(destination_file, 'wb') as dest_file:
-            counter = 1
-            last_byte = None
-            chunk = src_file.read(4096)
-            while chunk:
-                for byte in chunk:
-                    if last_byte is not None and last_byte == byte and counter < 131:
-                        counter += 1
-                    else:
-                        if last_byte is not None:
-                            if last_byte < 128:
-                                if counter != 1:
-                                    dest_file.write((counter + 124).to_bytes(1, 'big'))
-                                dest_file.write(last_byte.to_bytes(1, 'big'))
-                            else:
-                                print("Wrong Character: " + str(last_byte))
-                            counter = 1
-                    last_byte = byte
-                if last_byte < 128:
-                    if counter != 1:
-                        dest_file.write((counter + 124).to_bytes(1, 'big'))
-                    dest_file.write(last_byte.to_bytes(1, 'big'))
+    with open(source_file, 'rb') as src_file, open(destination_file, 'wb') as dest_file:
+        counter = 1
+        last_byte = None
+        chunk = src_file.read(4096)
+        while chunk:
+            for byte in chunk:
+                if last_byte is not None and last_byte == byte and counter < 131:
+                    counter += 1
                 else:
-                    print("Wrong Character: " + str(last_byte))
-                counter = 1
-                chunk = src_file.read(4096)
+                    if last_byte is not None:
+                        if last_byte < 128:
+                            if counter != 1:
+                                dest_file.write((counter + 124).to_bytes(1, 'big'))
+                            dest_file.write(last_byte.to_bytes(1, 'big'))
+                        else:
+                            print("Wrong Character: " + str(last_byte))
+                        counter = 1
+                last_byte = byte
+            if last_byte < 128:
+                if counter != 1:
+                    dest_file.write((counter + 124).to_bytes(1, 'big'))
+                dest_file.write(last_byte.to_bytes(1, 'big'))
+            else:
+                print("Wrong Character: " + str(last_byte))
+            counter = 1
+            chunk = src_file.read(4096)
 
 
 def expand_rl2(source_file, destination_file):
-    with open(source_file, 'rb') as src_file:
-        with open(destination_file, 'wb') as dest_file:
-            chunk = src_file.read(4096)
-            count = 0
-            while chunk:
-                for byte in chunk:
-                    if count == 0:
-                        if byte > 127:
-                            count = byte - 124
-                        else:
-                            dest_file.write(byte.to_bytes(1, 'big'))
+    with open(source_file, 'rb') as src_file, open(destination_file, 'wb') as dest_file:
+        chunk = src_file.read(4096)
+        count = 0
+        while chunk:
+            for byte in chunk:
+                if count == 0:
+                    if byte > 127:
+                        count = byte - 124
                     else:
-                        for i in range(count):
-                            dest_file.write(byte.to_bytes(1, 'big'))
-                        count = 0
-                chunk = src_file.read(4096)
+                        dest_file.write(byte.to_bytes(1, 'big'))
+                else:
+                    for i in range(count):
+                        dest_file.write(byte.to_bytes(1, 'big'))
+                    count = 0
+            chunk = src_file.read(4096)
 
 
 def compress_rl3(source_file, destination_file):
@@ -118,6 +116,12 @@ def expand_rl3(source_file, destination_file):
 
 
 if __name__ == "__main__":
+    """for file in glob.glob("test_files/*"):
+        if "_expanded" not in file and ".rld" not in file:
+            compress_rl3(file, os.path.splitext(file)[0] + ".rld")
+            expand_rl3(os.path.splitext(file)[0] + ".rld",
+                       os.path.splitext(file)[0] + "_expanded" + os.path.splitext(file)[1])
+    """
     parser = argparse.ArgumentParser()
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument("-c", "--compress", action="store_true", help="→ komprimieren")
