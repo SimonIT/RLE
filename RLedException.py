@@ -1,0 +1,2 @@
+class RLedError(Exception):
+    pass
