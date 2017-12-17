@@ -1,6 +1,6 @@
 ##########################################################################################
 #  Namen:      Simon Bullik                                                              #
-#  Prog-Name:  RL3.py                            Klasse RL3                              #
+#  Prog-Name:  RL3.py                            Klasse DQI16                            #
 #  Version:    1.0                                                                       #
 #  Python:     3.6                               Datum:      2017.12.17                  #
 #  OS:         Windows 10                                                                #
