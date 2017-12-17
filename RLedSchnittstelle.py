@@ -8,7 +8,11 @@
 # Endeerkennung
 #
 
-import sys, os, RL2, RL3
+import RL2
+import RL3
+import RLedException
+import os
+import sys
 
 
 class RLed(object):
@@ -26,9 +30,9 @@ class RLed(object):
     def __init__(self):
         """Voreinstelllungen"""
         """self.compress = True"""
-        self.quiet = False
-        self.extension = "rld"
-        self.rld = None
+        self.quiet = False  # Ausgaben standardmäßig anschalten
+        self.extension = "rld"  # Setze die Standarddateiendung auf rld
+        self.rld = None  # rld auf none
 
     def compress(self, source_file):
         """runlength compressing for any type of file
@@ -37,17 +41,28 @@ class RLed(object):
         @return: Nothing
 
         It contains two paragraphs."""
-        self.rld = RL3.RL3()
-        self.rld.MARKER = self.MARKER
-        self.rld.MAXBYTES = self.MAXBYTES
-        destination_file = os.path.splitext(source_file)[0] + "." + self.extension
+        self.rld = RL3.RL3()  # Erstelle ein neues RL3 Objekt
+        self.rld.MARKER = self.MARKER  # Setze den Marker im Objekt
+        self.rld.MAXBYTES = self.MAXBYTES  # Setze die Maximale Byteanzahl
+        destination_file = os.path.splitext(source_file)[
+                               0] + "." + self.extension  # Erstelle den Namen der Ausgabedatei, mit dem Namen der Eingabedatei und der eingegeben Dateiendung
         try:
-            self.rld.compress(source_file, destination_file)
-        except Exception as inst:
-            if not self.quiet:
-                raise inst
-            else:
-                sys.exit(4)
+            self.rld.compress(source_file, destination_file)  # Komprimiere die eingebene Datei
+        except RLedException.RLedError as inst:  # Wenn ein RLedError auftritt
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(4)  # Beende das Programm mit dem Code 4
+        except OSError as inst:  # Wenn ein Fehler bei den Dateien auftritt
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(2)  # Beende das Programm mit dem Code 2
+        except Exception as inst:  # Bei allen anderen Fehlern
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(5)  # Beende das Programm mit dem Code 5
 
     def expand(self, source_file):
         """runlength expanding for files which were\
@@ -55,27 +70,26 @@ class RLed(object):
         @param source_file: The file including path that should be compressed
         @type source_file: string
         @return: Nothing"""
-        self.rld = RL3.RL3()
-        self.rld.MARKER = self.MARKER
-        self.rld.MAXBYTES = self.MAXBYTES
-        with open(source_file, 'rb') as src_file:
-            if src_file.read(3) == b'rl3':
-                extension_counter = src_file.read(1)
-                extension_orig = src_file.read(int.from_bytes(extension_counter, 'big'))
-                outputfile = os.path.splitext(source_file)[0]
-                if os.path.isfile(outputfile + "." + extension_orig.decode("utf-8")):
-                    number = 1
-                    while os.path.isfile(outputfile + str(number) + "." + extension_orig.decode("utf-8")):
-                        number += 1
-                    outputfile += str(number)
-                outputfile += "." + extension_orig.decode("utf-8")
-                try:
-                    self.rld.expand(source_file, outputfile)
-                except Exception as inst:
-                    if not self.quiet:
-                        raise inst
-                    else:
-                        sys.exit(4)
+        self.rld = RL3.RL3()  # Erstelle ein neues RL3 Objekt
+        self.rld.MARKER = self.MARKER  # Setze den Marker im Objekt
+        self.rld.MAXBYTES = self.MAXBYTES  # Setze die Maximale Byteanzahl
+        try:
+            self.rld.expand(source_file)  # Expandiere die Datei
+        except RLedException.RLedError as inst:  # Wenn ein RLedError auftritt
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(4)  # Beende das Programm mit dem Code 4
+        except OSError as inst:  # Wenn ein Fehler bei den Dateien auftritt
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(2)  # Beende das Programm mit dem Code 2
+        except Exception as inst:  # Bei allen anderen Fehlern
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(5)  # Beende das Programm mit dem Code 5
 
     def compress_simple(self, source_file):
         """runlength compressing for ASCII files only\
@@ -83,16 +97,27 @@ class RLed(object):
         @param source_file: The file including path that should be compressed
         @type source_file: string
         @return: Nothing"""
-        self.rld = RL2.RL2()
-        self.rld.MAXBYTES = self.MAXBYTES_SIMPLE
-        destination_file = os.path.splitext(source_file)[0] + "." + self.extension
+        self.rld = RL2.RL2()  # Erstelle ein neues RL2 Objekt
+        self.rld.MAXBYTES = self.MAXBYTES_SIMPLE  # Setze die Maximale Byteanzahl
+        destination_file = os.path.splitext(source_file)[
+                               0] + "." + self.extension  # Erstelle den Namen der Ausgabedatei, mit dem Namen der Eingabedatei und der eingegeben Dateiendung
         try:
             self.rld.compress(source_file, destination_file)
-        except Exception as inst:
-            if not self.quiet:
-                raise inst
-            else:
-                sys.exit(4)
+        except RLedException.RLedError as inst:  # Wenn ein RLedError auftritt
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(4)  # Beende das Programm mit dem Code 4
+        except OSError as inst:  # Wenn ein Fehler bei den Dateien auftritt
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(2)  # Beende das Programm mit dem Code 2
+        except Exception as inst:  # Bei allen anderen Fehlern
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(5)  # Beende das Programm mit dem Code 5
 
     def expand_simple(self, source_file):
         """runlength expanding for files which were\
@@ -100,26 +125,25 @@ class RLed(object):
         @param source_file: The file including path that should be compressed
         @type source_file: string
         @return: Nothing"""
-        self.rld = RL2.RL2()
-        self.rld.MAXBYTES = self.MAXBYTES_SIMPLE
-        with open(source_file, 'rb') as src_file:
-            if src_file.read(3) == b'rl2':
-                extension_counter = src_file.read(1)
-                extension_orig = src_file.read(int.from_bytes(extension_counter, 'big'))
-                outputfile = os.path.splitext(source_file)[0]
-                if os.path.isfile(outputfile + "." + extension_orig.decode("utf-8")):
-                    number = 1
-                    while os.path.isfile(outputfile + str(number) + "." + extension_orig.decode("utf-8")):
-                        number += 1
-                    outputfile += str(number)
-                outputfile += "." + extension_orig.decode("utf-8")
-                try:
-                    self.rld.expand(source_file, outputfile)
-                except Exception as inst:
-                    if not self.quiet:
-                        raise inst
-                    else:
-                        sys.exit(4)
+        self.rld = RL2.RL2()  # Erstelle ein neues RL2 Objekt
+        self.rld.MAXBYTES = self.MAXBYTES_SIMPLE  # Setze die Maximale Byteanzahl
+        try:
+            self.rld.expand(source_file)
+        except RLedException.RLedError as inst:  # Wenn ein RLedError auftritt
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(4)  # Beende das Programm mit dem Code 4
+        except OSError as inst:  # Wenn ein Fehler bei den Dateien auftritt
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(2)  # Beende das Programm mit dem Code 2
+        except Exception as inst:  # Bei allen anderen Fehlern
+            if not self.quiet:  # Wenn Ausgaben erlaubt sind
+                raise inst  # Werfe den Fehler
+            else:  # Wenn Ausgaben nicht erlaubt sind
+                sys.exit(5)  # Beende das Programm mit dem Code 5
 
     def setStatusQuiet(self):
         """verboose level, we do not see messages on the screen"""
