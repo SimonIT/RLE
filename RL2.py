@@ -40,19 +40,26 @@ class RL2(RL):
                     else:  # Sonst
                         if last_byte is not None:  # Wenn das letzte Byte existiert
                             if last_byte < 128:  # Wenn das letzte Byte ein gültiges ASCII Zeichen ist
-                                if counter != 1:  # Wenn der Counter nicht nicht eins ist
+                                if counter > (self.MAXBYTES - 128):  # Wenn der Counter nicht nicht eins ist
                                     dest_file.write(
                                         (counter + (255 - self.MAXBYTES)).to_bytes(1, 'big'))  # Schreibe den Counter
-                                dest_file.write(last_byte.to_bytes(1, 'big'))  # Schreibe den Wert
+                                    dest_file.write(last_byte.to_bytes(1, 'big'))  # Schreibe den Wert
+                                else:
+                                    for i in range(counter):
+                                        dest_file.write(last_byte.to_bytes(1, 'big'))  # Schreibe den Wert
                             else:  # Sonst
                                 raise RLedError  # Werfe den RLedError
                             counter = 1  # Setze den Zähler auf 1 zurück
                     last_byte = byte  # Merke das aktuelle Byte für den Vergleich
                 chunk = src_file.read(self.chunk_size)  # Lese die neuen Bytes aus
-            if last_byte < self.MAXBYTES:  # Wenn das letzte Byte ein gültiges ASCII Zeichen ist
-                if counter != 1:  # Wenn der Counter nicht nicht eins ist
-                    dest_file.write((counter + (255 - self.MAXBYTES)).to_bytes(1, 'big'))  # Schreibe den Counter
-                dest_file.write(last_byte.to_bytes(1, 'big'))  # Schreibe den Wert
+            if last_byte < 128:  # Wenn das letzte Byte ein gültiges ASCII Zeichen ist
+                if counter > (self.MAXBYTES - 128):  # Wenn der Counter nicht nicht eins ist
+                    dest_file.write(
+                        (counter + (255 - self.MAXBYTES)).to_bytes(1, 'big'))  # Schreibe den Counter
+                    dest_file.write(last_byte.to_bytes(1, 'big'))  # Schreibe den Wert
+                else:
+                    for i in range(counter):
+                        dest_file.write(last_byte.to_bytes(1, 'big'))  # Schreibe den Wert
             else:  # Sonst
                 raise RLedError  # Werfe den RLedError
 
